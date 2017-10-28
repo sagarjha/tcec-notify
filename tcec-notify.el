@@ -20,8 +20,7 @@
 (defun send-mail (subject)
   (progn
     (mail)
-    (mail-to) (insert "sample-email@gmail.com")
-    (mail-to) (insert ", sample-email@gmail.com")
+    (mail-to) (insert "sjsagarjha3@gmail.com, tcec-notify@googlegroups.com")
     (mail-subject) (insert subject)
     (mail-text) (insert "")
     (mail-send)))
