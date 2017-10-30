@@ -3,6 +3,6 @@ var page = require('webpage').create();
 
 page.open(system.args[1], function()
 {
-    console.log(page.content);
+    console.log(page.title);
     phantom.exit();
 });
