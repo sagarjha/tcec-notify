@@ -39,7 +39,7 @@
 
 (defun send-mail (subject)
   (mail)
-  (mail-to) (insert "sjsagarjha3@gmail.com")
+  (mail-to) (insert "sjsagarjha3@gmail.com, tcec-notify@googlegroups.com")
   (mail-subject) (insert subject)
   (mail-text) (insert "Go to " tcec-url " to view the game.")
   (mail-send))
