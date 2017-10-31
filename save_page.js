@@ -2,7 +2,9 @@ var system = require('system');
 var page = require('webpage').create();
 
 page.open(system.args[1], function()
-{
-    console.log(page.title);
-    phantom.exit();
-});
+	  {
+	      window.setTimeout(function () {
+		  console.log(page.title);
+		  phantom.exit();
+	      }, 1000);
+	  });
