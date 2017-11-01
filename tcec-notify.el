@@ -1,5 +1,8 @@
 #!/usr/bin/emacs --script
 
+					; Source - Stackoverflow https://stackoverflow.com/questions/251908/how-can-i-insert-current-date-and-time-into-a-file-using-emacs
+(defvar current-date-time-format "%a %b %d %H:%M:%S %Z %Y")
+
 (defun get-page (url html-file)
   (shell-command (concat "phantomjs save_page.js " url " > " html-file)))
 
@@ -10,10 +13,21 @@
   (save-buffer))
 
 (defun write-log (log-file str)
+  (setq num-log-lines (1+ num-log-lines))
   (set-buffer log-file)
   (goto-char (point-max))
-  (insert (prin1-to-string str) "\n")
-  (save-buffer))
+  (insert (format-time-string current-date-time-format (current-time)) "\t" (prin1-to-string str) "\n")
+  (save-buffer)
+  (when (>= num-log-lines 10000)
+    (progn
+      (setq num-log-lines (- num-log-lines 1000))
+      (goto-char (point-min))
+      (setq beg (point))
+      (forward-line 1000)
+      (setq end (point))
+      (kill-region beg end)
+      (save-buffer)
+      (write-log log-file "Log purged by 1000 lines"))))
 
 (defun read-old-tcec-title (title-file)
   (find-file title-file)
@@ -46,25 +60,20 @@
 
 (defun run-tcec-notify ()
   (while 1
-  (progn
-    (setq if-error 1)
-    (while if-error
+    (progn 
       (condition-case err
-	  (progn
-	    (setq if-error nil) 
+	  (progn 
 	    (get-page tcec-url tcec-html-file)
-	    (setq tcec-title (find-title tcec-html-file)))
-	(error (progn
-		 (write-log tcec-log-file err)
-		 (setq if-error 1)))))
-    (when (not (string= tcec-title old-tcec-title))
-      (progn
-	(write-log tcec-log-file "Sending email")
-	(setq old-tcec-title tcec-title)
-	(write-tcec-title tcec-title-file tcec-title)
-	(send-mail tcec-title)))
-    (write-log tcec-log-file "Sleeping for 5 minutes")
-    (sit-for 300))))
+	    (setq tcec-title (find-title tcec-html-file))
+	    (when (not (string= tcec-title old-tcec-title))
+	      (progn
+		(write-log tcec-log-file "Sending email")
+		(setq old-tcec-title tcec-title)
+		(write-tcec-title tcec-title-file tcec-title)
+		(send-mail tcec-title))))
+	(error (write-log tcec-log-file err))) 
+      (write-log tcec-log-file "Sleeping for 5 minutes")
+      (sit-for 300))))
 
 (sit-for 60)
 (setq tcec-log-file "tcec-notify.log")
@@ -73,6 +82,7 @@
 (set-buffer tcec-log-file)
 (erase-buffer)
 (save-buffer)
+(setq num-log-lines 0)
 (write-log tcec-log-file "Starting tcec-notify")
 (setq tcec-url "http://tcec.chessdom.com/live.php")
 (setq tcec-html-file "tcec-live.html")
